@@ -39,7 +39,7 @@ struct pb_istream_s
 
     void *state; /* Free field for use by callback implementation */
     size_t bytes_left;
-    
+
 #ifndef PB_NO_ERRMSG
     const char *errmsg;
 #endif
@@ -48,7 +48,7 @@ struct pb_istream_s
 /***************************
  * Main decoding functions *
  ***************************/
- 
+
 /* Decode a single protocol buffers message from input stream into a C structure.
  * Returns true on success, false on any failure.
  * The actual struct pointed to by dest must match the description in fields.

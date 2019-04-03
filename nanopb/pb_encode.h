@@ -40,7 +40,7 @@ struct pb_ostream_s
     void *state;          /* Free field for use by callback implementation. */
     size_t max_size;      /* Limit number of output bytes written (or use SIZE_MAX). */
     size_t bytes_written; /* Number of bytes written so far. */
-    
+
 #ifndef PB_NO_ERRMSG
     const char *errmsg;
 #endif
