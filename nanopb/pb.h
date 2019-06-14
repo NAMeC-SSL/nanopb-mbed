@@ -46,7 +46,7 @@
 
 /* Version of the nanopb library. Just in case you want to check it in
  * your own program. */
-#define NANOPB_VERSION nanopb-0.3.9-dev
+#define NANOPB_VERSION nanopb-0.3.9.3
 
 /* Include all the system headers needed by nanopb. You will need the
  * definitions of the following:
@@ -189,7 +189,7 @@ typedef uint_least8_t pb_type_t;
 #define PB_HTYPE_MASK     0x30
 
 /**** Field allocation types ****/
- 
+
 #define PB_ATYPE_STATIC   0x00
 #define PB_ATYPE_POINTER  0x80
 #define PB_ATYPE_CALLBACK 0x40
@@ -237,7 +237,7 @@ struct pb_field_s {
     pb_ssize_t size_offset; /* Offset of array size or has-boolean, relative to data */
     pb_size_t data_size; /* Data size in bytes for a single item */
     pb_size_t array_size; /* Maximum number of entries in array */
-    
+
     /* Field definitions for submessage
      * OR default value for all other non-array, non-callback types
      * If null, then field will zeroed. */
@@ -251,8 +251,10 @@ PB_PACKED_STRUCT_END
  * If you get errors here, it probably means that your stdint.h is not
  * correct for your platform.
  */
+#ifndef PB_WITHOUT_64BIT
 PB_STATIC_ASSERT(sizeof(int64_t) == 2 * sizeof(int32_t), INT64_T_WRONG_SIZE)
 PB_STATIC_ASSERT(sizeof(uint64_t) == 2 * sizeof(uint32_t), UINT64_T_WRONG_SIZE)
+#endif
 
 /* This structure is used for 'bytes' arrays.
  * It has the number of bytes in the beginning, and after that an array.
@@ -302,7 +304,7 @@ struct pb_callback_s {
         bool (*encode)(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
     } funcs;
 #endif    
-    
+
     /* Free arg for use by callback */
     void *arg;
 };
@@ -332,7 +334,7 @@ struct pb_extension_type_s {
      */
     bool (*decode)(pb_istream_t *stream, pb_extension_t *extension,
                    uint32_t tag, pb_wire_type_t wire_type);
-    
+
     /* Called once after all regular fields have been encoded.
      * If you have something to write, do so and return true.
      * If you do not have anything to write, just return true.
@@ -340,7 +342,7 @@ struct pb_extension_type_s {
      * Set to NULL for default handler.
      */
     bool (*encode)(pb_ostream_t *stream, const pb_extension_t *extension);
-    
+
     /* Free field for use by the callback. */
     const void *arg;
 };
@@ -349,11 +351,11 @@ struct pb_extension_s {
     /* Type describing the extension field. Usually you'll initialize
      * this to a pointer to the automatically generated structure. */
     const pb_extension_type_t *type;
-    
+
     /* Destination for the decoded data. This must match the datatype
      * of the extension field. */
     void *dest;
-    
+
     /* Pointer to the next extension handler, or NULL.
      * If this extension does not match a field, the next handler is
      * automatically called. */
@@ -460,7 +462,7 @@ struct pb_extension_s {
 #define PB_SINGULAR_CALLBACK(tag, st, m, fd, ltype, ptr) \
     {tag, PB_ATYPE_CALLBACK | PB_HTYPE_OPTIONAL | ltype, \
     fd, 0, pb_membersize(st, m), 0, ptr}
-    
+
 #define PB_REPEATED_CALLBACK(tag, st, m, fd, ltype, ptr) \
     {tag, PB_ATYPE_CALLBACK | PB_HTYPE_REPEATED | ltype, \
     fd, 0, pb_membersize(st, m), 0, ptr}
@@ -524,6 +526,14 @@ struct pb_extension_s {
         PB_ ## rules ## _ ## allocation(tag, message, field, \
         PB_DATAOFFSET_ ## placement(message, field, prevfield), \
         PB_LTYPE_MAP_ ## type, ptr)
+
+/* Field description for repeated static fixed count fields.*/
+#define PB_REPEATED_FIXED_COUNT(tag, type, placement, message, field, prevfield, ptr) \
+    {tag, PB_ATYPE_STATIC | PB_HTYPE_REPEATED | PB_LTYPE_MAP_ ## type, \
+    PB_DATAOFFSET_ ## placement(message, field, prevfield), \
+    0, \
+    pb_membersize(message, field[0]), \
+    pb_arraysize(message, field), ptr}
 
 /* Field description for oneof fields. This requires taking into account the
  * union name also, that's why a separate set of macros is needed.

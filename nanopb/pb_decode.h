@@ -39,7 +39,7 @@ struct pb_istream_s
 
     void *state; /* Free field for use by callback implementation */
     size_t bytes_left;
-    
+
 #ifndef PB_NO_ERRMSG
     const char *errmsg;
 #endif
@@ -48,7 +48,7 @@ struct pb_istream_s
 /***************************
  * Main decoding functions *
  ***************************/
- 
+
 /* Decode a single protocol buffers message from input stream into a C structure.
  * Returns true on success, false on any failure.
  * The actual struct pointed to by dest must match the description in fields.
@@ -84,6 +84,18 @@ bool pb_decode_noinit(pb_istream_t *stream, const pb_field_t fields[], void *des
  * protobuf API.
  */
 bool pb_decode_delimited(pb_istream_t *stream, const pb_field_t fields[], void *dest_struct);
+
+/* Same as pb_decode_delimited, except that it does not initialize the destination structure.
+ * See pb_decode_noinit
+ */
+bool pb_decode_delimited_noinit(pb_istream_t *stream, const pb_field_t fields[], void *dest_struct);
+
+/* Same as pb_decode, except allows the message to be terminated with a null byte.
+ * NOTE: Until nanopb-0.4.0, pb_decode() also allows null-termination. This behaviour
+ * is not supported in most other protobuf implementations, so pb_decode_delimited()
+ * is a better option for compatibility.
+ */
+bool pb_decode_nullterminated(pb_istream_t *stream, const pb_field_t fields[], void *dest_struct);
 
 #ifdef PB_ENABLE_MALLOC
 /* Release any allocated pointer fields. If you use dynamic allocation, you should
@@ -124,7 +136,11 @@ bool pb_skip_field(pb_istream_t *stream, pb_wire_type_t wire_type);
 
 /* Decode an integer in the varint format. This works for bool, enum, int32,
  * int64, uint32 and uint64 field types. */
+#ifndef PB_WITHOUT_64BIT
 bool pb_decode_varint(pb_istream_t *stream, uint64_t *dest);
+#else
+#define pb_decode_varint pb_decode_varint32
+#endif
 
 /* Decode an integer in the varint format. This works for bool, enum, int32,
  * and uint32 field types. */
@@ -132,15 +148,21 @@ bool pb_decode_varint32(pb_istream_t *stream, uint32_t *dest);
 
 /* Decode an integer in the zig-zagged svarint format. This works for sint32
  * and sint64. */
+#ifndef PB_WITHOUT_64BIT
 bool pb_decode_svarint(pb_istream_t *stream, int64_t *dest);
+#else
+bool pb_decode_svarint(pb_istream_t *stream, int32_t *dest);
+#endif
 
 /* Decode a fixed32, sfixed32 or float value. You need to pass a pointer to
  * a 4-byte wide C variable. */
 bool pb_decode_fixed32(pb_istream_t *stream, void *dest);
 
+#ifndef PB_WITHOUT_64BIT
 /* Decode a fixed64, sfixed64 or double value. You need to pass a pointer to
  * a 8-byte wide C variable. */
 bool pb_decode_fixed64(pb_istream_t *stream, void *dest);
+#endif
 
 /* Make a limited-length substream for reading a PB_WT_STRING field. */
 bool pb_make_string_substream(pb_istream_t *stream, pb_istream_t *substream);
