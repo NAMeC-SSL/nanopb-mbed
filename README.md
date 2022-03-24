@@ -1,6 +1,5 @@
-# nanopb
+# Nanopb
 
-[Nanopb](https://jpa.kapsi.fi/nanopb) is a plain-C implementation of Google's
-Protocol Buffers data format.
+[Nanopb](https://jpa.kapsi.fi/nanopb) is a plain-C implementation of Google's Protocol Buffers data format.
 
-This repository contains necessary files to use Nanopb in an mbed OS project.
+This repository links official repository to use Nanopb in an Mbed OS project.
