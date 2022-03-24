@@ -1,0 +1,8 @@
+nanopb/conan-wrapper/*
+nanopb/examples/*
+nanopb/extra/*
+nanopb/generator/*
+nanopb/spm-test/*
+nanopb/spm_headers/*
+nanopb/tests/*
+nanopb/tools/*
